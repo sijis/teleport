@@ -51,7 +51,7 @@ By default, it is stored in `/etc/teleport.yaml`.
   ```yaml
   auth_service:
     enabled: no
-  
+
   proxy_service:
     enabled: no
   ```
@@ -347,8 +347,6 @@ auth_service:
             # app_id should always also be listed as a facet
             - https://localhost:3080
             - https://localhost
-            - localhost:3080
-            - localhost
 
             # optional list of certificate authorities (as local file paths or
             # in-line PEM certificate string) for U2F [device
