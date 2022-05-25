@@ -40,7 +40,8 @@ import (
 // TemplateSSHClient contains parameters for the ssh_config config
 // template
 type TemplateSSHClient struct {
-	ProxyPort uint16 `yaml:"proxy_port"`
+	ProxyPort     uint16 `yaml:"proxy_port"`
+	getSSHVersion func() (*semver.Version, error)
 }
 
 // openSSHVersionRegex is a regex used to parse OpenSSH version strings.
@@ -97,8 +98,8 @@ func parseSSHVersion(versionString string) (*semver.Version, error) {
 	}, nil
 }
 
-// getSSHVersion attempts to query the system SSH for its current version.
-func getSSHVersion() (*semver.Version, error) {
+// getSystemSSHVersion attempts to query the system SSH for its current version.
+func getSystemSSHVersion() (*semver.Version, error) {
 	var out bytes.Buffer
 
 	cmd := exec.Command("ssh", "-V")
@@ -115,6 +116,9 @@ func getSSHVersion() (*semver.Version, error) {
 func (c *TemplateSSHClient) CheckAndSetDefaults() error {
 	if c.ProxyPort == 0 {
 		c.ProxyPort = defaults.SSHProxyListenPort
+	}
+	if c.getSSHVersion == nil {
+		c.getSSHVersion = getSystemSSHVersion
 	}
 	return nil
 }
@@ -187,7 +191,7 @@ func (c *TemplateSSHClient) Render(ctx context.Context, authClient auth.ClientI,
 
 	// Default to including the RSA deprecation workaround.
 	rsaWorkaround := true
-	version, err := getSSHVersion()
+	version, err := c.getSSHVersion()
 	if err != nil {
 		log.WithError(err).Debugf("Could not determine SSH version, will include RSA workaround.")
 	} else if version.LessThan(*openSSHMinVersionForRSAWorkaround) {
