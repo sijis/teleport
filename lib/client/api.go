@@ -1968,11 +1968,13 @@ func (tc *TeleportClient) ListApps(ctx context.Context, customFilter *proto.List
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+
+	servers = types.DeduplicateAppServers(servers)
 	var apps []types.Application
 	for _, server := range servers {
 		apps = append(apps, server.GetApp())
 	}
-	return types.DeduplicateApps(apps), nil
+	return apps, nil
 }
 
 // CreateAppSession creates a new application access session.
@@ -2027,11 +2029,13 @@ func (tc *TeleportClient) ListDatabases(ctx context.Context, customFilter *proto
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
+
+	servers = types.DeduplicateDatabaseServers(servers)
 	var databases []types.Database
 	for _, server := range servers {
 		databases = append(databases, server.GetDatabase())
 	}
-	return types.DeduplicateDatabases(databases), nil
+	return databases, nil
 }
 
 // ListAllNodes is the same as ListNodes except that it ignores labels.

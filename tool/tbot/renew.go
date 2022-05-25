@@ -236,12 +236,12 @@ func getDatabase(ctx context.Context, client auth.ClientI, name string) (types.D
 		return nil, trace.Wrap(err)
 	}
 
+	servers = types.DeduplicateDatabaseServers(servers)
 	var databases []types.Database
 	for _, server := range servers {
 		databases = append(databases, server.GetDatabase())
 	}
 
-	databases = types.DeduplicateDatabases(databases)
 	if len(databases) == 0 {
 		return nil, trace.NotFound("database %q not found", name)
 	}
