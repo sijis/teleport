@@ -177,3 +177,24 @@ func TestDatabaseServerSorter(t *testing.T) {
 	servers := makeServers(testValsUnordered, "does-not-matter")
 	require.True(t, trace.IsNotImplemented(DatabaseServers(servers).SortByCustom(sortBy)))
 }
+
+func TestDeduplicateDatabaseServers(t *testing.T) {
+	t.Parallel()
+
+	expected := []DatabaseServer{
+		&DatabaseServerV3{Metadata: Metadata{Name: "s1"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "a"}}}},
+		&DatabaseServerV3{Metadata: Metadata{Name: "s2"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "dev"}}}}},
+		&DatabaseServerV3{Metadata: Metadata{Name: "s3"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "prod"}}}}},
+		&DatabaseServerV3{Metadata: Metadata{Name: "s4"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "b"}}}},
+	}
+
+	dups := []DatabaseServer{
+		&DatabaseServerV3{Metadata: Metadata{Name: "s5"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "prod"}}}}},
+		&DatabaseServerV3{Metadata: Metadata{Name: "s6"}, Spec: DatabaseServerSpecV3{Database: &DatabaseV3{Metadata: Metadata{Name: "b"}}}},
+	}
+
+	servers := append(expected, dups...)
+
+	result := DeduplicateDatabaseServers(servers)
+	require.ElementsMatch(t, result, expected)
+}

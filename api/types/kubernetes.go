@@ -275,16 +275,17 @@ func (s KubeClusters) GetFieldVals(field string) ([]string, error) {
 	return vals, nil
 }
 
-// DeduplicateKubeClusters deduplicates kube clusters by name.
+// DeduplicateKubeClusters deduplicates kube clusters by name and labels
 func DeduplicateKubeClusters(kubeclusters []KubeCluster) []KubeCluster {
 	seen := make(map[string]struct{})
 	result := make([]KubeCluster, 0, len(kubeclusters))
 
 	for _, cluster := range kubeclusters {
-		if _, ok := seen[cluster.GetName()]; ok {
+		key := fmt.Sprintf("%s%s", cluster.GetName(), cluster.LabelsString())
+		if _, ok := seen[key]; ok {
 			continue
 		}
-		seen[cluster.GetName()] = struct{}{}
+		seen[key] = struct{}{}
 		result = append(result, cluster)
 	}
 

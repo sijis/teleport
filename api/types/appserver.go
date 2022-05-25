@@ -378,16 +378,18 @@ func (s AppServers) GetFieldVals(field string) ([]string, error) {
 	return vals, nil
 }
 
-// DeduplicateAppServers deduplicates appservers with the same application name.
+// DeduplicateAppServers deduplicates appservers with its Applications that have the same
+// name, public address and labels.
 func DeduplicateAppServers(servers []AppServer) []AppServer {
 	seen := make(map[string]struct{})
 	result := make([]AppServer, 0, len(servers))
 	for _, server := range servers {
-		appName := server.GetApp().GetName()
-		if _, ok := seen[appName]; ok {
+		app := server.GetApp()
+		key := fmt.Sprintf("%s%s%s", app.GetName(), app.GetPublicAddr(), app.LabelsString())
+		if _, ok := seen[key]; ok {
 			continue
 		}
-		seen[appName] = struct{}{}
+		seen[key] = struct{}{}
 		result = append(result, server)
 	}
 	return result

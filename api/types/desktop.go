@@ -17,6 +17,7 @@ limitations under the License.
 package types
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/gravitational/teleport/api/utils"
@@ -204,14 +205,15 @@ func (d *WindowsDesktopV3) MatchSearch(values []string) bool {
 	return MatchSearch(fieldVals, values, nil)
 }
 
-// DeduplicateDesktops deduplicates desktops by name.
+// DeduplicateDesktops deduplicates desktops by name and labels
 func DeduplicateDesktops(desktops []WindowsDesktop) (result []WindowsDesktop) {
 	seen := make(map[string]struct{})
 	for _, desktop := range desktops {
-		if _, ok := seen[desktop.GetName()]; ok {
+		key := fmt.Sprintf("%s%s", desktop.GetName(), desktop.LabelsString())
+		if _, ok := seen[key]; ok {
 			continue
 		}
-		seen[desktop.GetName()] = struct{}{}
+		seen[key] = struct{}{}
 		result = append(result, desktop)
 	}
 	return result

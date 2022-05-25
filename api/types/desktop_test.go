@@ -86,3 +86,25 @@ func TestWindowsDesktopsSorter(t *testing.T) {
 	desktops := makeDesktops(testValsUnordered, "does-not-matter")
 	require.True(t, trace.IsNotImplemented(WindowsDesktops(desktops).SortByCustom(sortBy)))
 }
+
+func TestDeduplicateDesktops(t *testing.T) {
+	t.Parallel()
+
+	expected := []WindowsDesktop{
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "a"}}},
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "prod"}}}},
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "dev"}}}},
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "b"}}},
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "c"}}},
+	}
+
+	dups := []WindowsDesktop{
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "dev"}}}},
+		&WindowsDesktopV3{ResourceHeader: ResourceHeader{Metadata: Metadata{Name: "b"}}},
+	}
+
+	clusters := append(expected, dups...)
+
+	result := DeduplicateDesktops(clusters)
+	require.ElementsMatch(t, result, expected)
+}

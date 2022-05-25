@@ -67,17 +67,18 @@ func TestDeduplicateKubeClusters(t *testing.T) {
 
 	expected := []KubeCluster{
 		&KubernetesClusterV3{Metadata: Metadata{Name: "a"}},
+		&KubernetesClusterV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "prod"}}},
+		&KubernetesClusterV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "dev"}}},
 		&KubernetesClusterV3{Metadata: Metadata{Name: "b"}},
 		&KubernetesClusterV3{Metadata: Metadata{Name: "c"}},
 	}
 
-	extra := []KubeCluster{
-		&KubernetesClusterV3{Metadata: Metadata{Name: "a"}},
-		&KubernetesClusterV3{Metadata: Metadata{Name: "a"}},
+	dups := []KubeCluster{
+		&KubernetesClusterV3{Metadata: Metadata{Name: "a", Labels: map[string]string{"env": "dev"}}},
 		&KubernetesClusterV3{Metadata: Metadata{Name: "b"}},
 	}
 
-	clusters := append(expected, extra...)
+	clusters := append(expected, dups...)
 
 	result := DeduplicateKubeClusters(clusters)
 	require.ElementsMatch(t, result, expected)

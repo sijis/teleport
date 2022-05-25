@@ -301,19 +301,6 @@ func (a *AppV3) CheckAndSetDefaults() error {
 	return nil
 }
 
-// DeduplicateApps deduplicates apps by name.
-func DeduplicateApps(apps []Application) (result []Application) {
-	seen := make(map[string]struct{})
-	for _, app := range apps {
-		if _, ok := seen[app.GetName()]; ok {
-			continue
-		}
-		seen[app.GetName()] = struct{}{}
-		result = append(result, app)
-	}
-	return result
-}
-
 // Apps is a list of app resources.
 type Apps []Application
 

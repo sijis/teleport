@@ -588,19 +588,6 @@ const (
 	DatabaseTypeElastiCache = "elasticache"
 )
 
-// DeduplicateDatabases deduplicates databases by name.
-func DeduplicateDatabases(databases []Database) (result []Database) {
-	seen := make(map[string]struct{})
-	for _, database := range databases {
-		if _, ok := seen[database.GetName()]; ok {
-			continue
-		}
-		seen[database.GetName()] = struct{}{}
-		result = append(result, database)
-	}
-	return result
-}
-
 // Databases is a list of database resources.
 type Databases []Database
 
